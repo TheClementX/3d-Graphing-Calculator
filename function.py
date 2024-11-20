@@ -20,8 +20,8 @@ class function:
     #this raises domain errors with sqrt functions
     def generateFunctionPoints(self, maxx, maxy, maxz, numgridlines):
         lambdaF = sp.lambdify(sp.symbols('x, y'), self.f, 'math')
-        self.points = []
-        
+        self.points = set() 
+
         # set the interval for point generation in x and y direction 
         intervalSizeX = maxx/numgridlines
         intervalSizeY = maxy/numgridlines
@@ -32,21 +32,34 @@ class function:
             for y in range(0, int(maxy) + 1, int(intervalSizeY)):
                 
                 #x y
-                xy = [x, y, lambdaF(x, y)]
-                if xy not in self.points and -maxz <= xy[2] <= maxz:
-                    self.points.append(xy)
+                try:
+                    xy = (x, y, lambdaF(x, y))
+                    if xy not in self.points and -maxz <= xy[2] <= maxz:
+                        self.points.add(xy)
+                except:
+                    pass
+
                 #-x y
-                nxy = [-x, y, lambdaF(-x, y)]
-                if nxy not in self.points and -maxz <= nxy[2] <= maxz:
-                    self.points.append(nxy)
+                try:
+                    nxy = (-x, y, lambdaF(-x, y))
+                    if nxy not in self.points and -maxz <= nxy[2] <= maxz:
+                        self.points.add(nxy)
+                except:
+                    pass
                 #x -y
-                xny = [x, -y, lambdaF(x, -y)]
-                if xny not in self.points and -maxz <= xny[2] <= maxz:
-                    self.points.append(xny)
+                try:
+                    xny = (x, -y, lambdaF(x, -y))
+                    if xny not in self.points and -maxz <= xny[2] <= maxz:
+                        self.points.add(xny)
+                except:
+                    pass
                 #-x -y
-                nxny = [-x, -y, lambdaF(-x, -y)]
-                if nxny not in self.points and -maxz <= nxny[2] <= maxz:
-                    self.points.append(nxny)
+                try:
+                    nxny = (-x, -y, lambdaF(-x, -y))
+                    if nxny not in self.points and -maxz <= nxny[2] <= maxz:
+                        self.points.add(nxny)
+                except:
+                    pass
         print(self.points) 
         return self.points
 

@@ -23,7 +23,7 @@ def onAppStart(app):
 
     #function.string_function related variables
     app.function = function.function()
-    app.function.string_function = '(x**2) /10 + (y**2) / 10 '
+    app.function.string_function = 'sqrt(x)'
     app.function.setSpFunction()
     app.function.generateFunctionPoints(app.graph.xRadius, app.graph.yRadius, app.graph.zRadius, app.graph.numGridLines)
     #app.function.printPoints()
@@ -31,6 +31,7 @@ def onAppStart(app):
     #mode 
     app.funcMode = False
     app.insertMode = True
+    app.error = False
 
     #circles are drawing in the correct place spin scaling and lines next
 
@@ -147,6 +148,8 @@ def drawUI(app):
         drawLabel(f'Z len:  {str(app.graph.zScope)}', 50, 50)
     elif app.insertMode:
         drawLabel(f'function: {app.function.string_function}', app.width/2, app.height/2, size=20)
+    if app.error:
+        drawLabel('invalid function entered', 800, 200)
 
 #time based step functions / event loop equivalent
 def onStep(app):
@@ -172,15 +175,15 @@ def takeStep(app):
 
 def onKeyPress(app, key):
     if app.insertMode:
-        if key == 'x': app.function.string_function += 'x'
-        if key == 'y': app.function.string_function+= 'y'
+        if key == ')' or key == '(': app.function.string_function += key
         if key == '+': app.function.string_function += '+'
         if key == '-': app.function.string_function += '-'
         if key == '*': app.function.string_function += '*'
         if key == '/': app.function.string_function += '/'
         if key.isdigit(): app.function.string_function += key
+        if key.isalpha() and len(key) == 1 and key != 'I' and key != 'F': app.function.string_function += key 
         if key == 'backspace': app.function.string_function = app.function.string_function[:-1]
-        if key == 'c': app.function.string_function = ''
+        if key == 'q': app.function.string_function = ''
     if app.funcMode:
         if key == 'r': app.rotating = not app.rotating
         if key == 'w': app.matrices.tz += 0.2
@@ -191,15 +194,18 @@ def onKeyPress(app, key):
         if key == 'g': app.matrices.ty += 0.2
         if key == 'u': 
             app.matrices.tx= app.matrices.ty= app.matrices.tz = 0 
-    if key == 'i':
+    if key == 'I':
         app.insertMode = True
         app.funcMode = False
-    if key == 'f':
-        app.function.setSpFunction()
-        
-        app.function.generateFunctionPoints(app.graph.xRadius, app.graph.yRadius, app.graph.zRadius, app.graph.numGridLines)
-        app.funcMode = True
-        app.insertMode = False
+    if key == 'F':
+        try:
+            app.error = False
+            app.function.setSpFunction()
+            app.function.generateFunctionPoints(app.graph.xRadius, app.graph.yRadius, app.graph.zRadius, app.graph.numGridLines)
+            app.funcMode = True
+            app.insertMode = False
+        except:
+            app.error = True
 
 
 def main(app):
