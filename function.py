@@ -1,5 +1,6 @@
 import sympy as sp
 import numpy as np 
+import math 
 
 #takes a string function
 #sets a sympy function
@@ -17,13 +18,18 @@ class function:
     
     #get all [x, y, z] vector values based on maxx and maxy and interval size
     #this raises domain errors with sqrt functions
-    def generateFunctionPoints(self, maxx, maxy, maxz, intervalSize):
+    def generateFunctionPoints(self, maxx, maxy, maxz, numgridlines):
         lambdaF = sp.lambdify(sp.symbols('x, y'), self.f, 'math')
         self.points = []
+        
+        # set the interval for point generation in x and y direction 
+        intervalSizeX = maxx/numgridlines
+        intervalSizeY = maxy/numgridlines
+        print(intervalSizeX, intervalSizeY)
 
         #must cast points in the range into ints could cause problems
-        for x in range(0, int(maxx) + 1, int(intervalSize)):
-            for y in range(0, int(maxy) + 1, int(intervalSize)):
+        for x in range(0, int(maxx) + 1, int(intervalSizeX)):
+            for y in range(0, int(maxy) + 1, int(intervalSizeY)):
                 
                 #x y
                 xy = [x, y, lambdaF(x, y)]
@@ -41,7 +47,7 @@ class function:
                 nxny = [-x, -y, lambdaF(-x, -y)]
                 if nxny not in self.points and -maxz <= nxny[2] <= maxz:
                     self.points.append(nxny)
-        
+        print(self.points) 
         return self.points
 
     def printPoints(self):

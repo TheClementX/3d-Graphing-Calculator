@@ -87,8 +87,8 @@ class graph:
             self.gridFrontY.append([self.xRadius, y, 0])
             self.gridFrontY.append([self.xRadius, -y, 0])
 
-        print(self.gridFrontX)
-        print(self.gridFrontY)
+#         print(self.gridFrontX)
+#         print(self.gridFrontY)
 
 
     def scaleGraph(self, xScope, yScope, zScope, numGridLines):
@@ -102,6 +102,3 @@ class graph:
         self.setAxis()
         self.setOuterBox()
 
-    #rotates all points that are part of the graph to correct mathematical orientation
-    def correctGraphOrientation(self):
-        pass

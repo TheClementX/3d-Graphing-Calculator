@@ -10,7 +10,7 @@ def onAppStart(app):
     app.stepsPerSecond = 60
     app.width = 1000
     app.height = 1000
-    app.graph = Graph.graph(20,20,20,15)
+    app.graph = Graph.graph(40,20,20,10)
     app.matrices = mf.matrices()
 
     #varibales used in scale point
@@ -21,23 +21,26 @@ def onAppStart(app):
 
     app.rotating = True
 
-    #equation related variables
+    #function.string_function related variables
     app.function = function.function()
     app.function.string_function = '(x**2) /10 + (y**2) / 10 '
     app.function.setSpFunction()
-    app.function.generateFunctionPoints(app.graph.numGridLines, app.graph.numGridLines, 1)
+    app.function.generateFunctionPoints(app.graph.xRadius, app.graph.yRadius, app.graph.zRadius, app.graph.numGridLines)
     #app.function.printPoints()
+    
+    #mode 
+    app.funcMode = False
+    app.insertMode = True
 
-#circles are drawing in the correct place
-#add spin scaling and lines next
+    #circles are drawing in the correct place spin scaling and lines next
+
+    #apply necessary transformations to each element of the graph not including the function
+    #function will be drawn in a seperate function for clarity
 def drawGraph(app):
 
     outerBoxPoints = []
     axisPoints = []
     gridPoints = []
-
-    #apply necessary transformations to each element of the graph not including the function
-    #function will be drawn in a seperate function for clarity
 
     #scaling can and should be put into a function at
     #scale outerBox
@@ -93,10 +96,9 @@ def drawGraph(app):
 def makeDrawablePoint(app, point):
     transformedPoint = app.matrices.correctPointOrientation(point)
 
-    if app.rotating:
-        transformedPoint = mf.projectPoint(app.matrices.xRotationMatrix, transformedPoint)
-        transformedPoint = mf.projectPoint(app.matrices.yRotationMatrix, transformedPoint)
-        transformedPoint = mf.projectPoint(app.matrices.zRotationMatrix, transformedPoint)
+    transformedPoint = mf.projectPoint(app.matrices.xRotationMatrix, transformedPoint)
+    transformedPoint = mf.projectPoint(app.matrices.yRotationMatrix, transformedPoint)
+    transformedPoint = mf.projectPoint(app.matrices.zRotationMatrix, transformedPoint)
 
     transformedPoint = mf.scalePoint(transformedPoint, app.scale, app.xoffset, app.yoffset)
     transformedPoint = mf.projectPoint(app.matrices.projectionMatrix, transformedPoint)
@@ -109,13 +111,13 @@ def drawGrid(app):
         backPoint = [point[0], point[1] - point[1] * 2, point[2]]
         transformedPoint1 = makeDrawablePoint(app, point)
         transformedPoint2 = makeDrawablePoint(app, backPoint)
-        drawLine(transformedPoint1[0], transformedPoint1[1], transformedPoint2[0], transformedPoint2[1])
+        drawLine(transformedPoint1[0], transformedPoint1[1], transformedPoint2[0], transformedPoint2[1], fill='red')
 
     for point in app.graph.gridFrontY:
         backPoint = [point[0] - point[0] * 2, point[1], point[2]]
         transformedPoint1 = makeDrawablePoint(app, point)
         transformedPoint2 = makeDrawablePoint(app, backPoint)
-        drawLine(transformedPoint1[0], transformedPoint1[1], transformedPoint2[0], transformedPoint2[1])
+        drawLine(transformedPoint1[0], transformedPoint1[1], transformedPoint2[0], transformedPoint2[1], fill='green')
 
 #draw the function 
 def drawFunction(app):
@@ -124,17 +126,31 @@ def drawFunction(app):
         drawCircle(transformedPoint[0], transformedPoint[1], 4, fill='purple')
 
 def redrawAll(app):
-    # print(app.graph.xyzAxis)
-    # print(app.graph.xyzAxis)
-    # print(app.ms.xRotationMatrix)
-    drawGraph(app)
-    # print(app.function.f, "done")
-    # print(app.function.points, "done")
-    drawFunction(app)
+    if app.funcMode:
+        # print(app.graph.xyzAxis)
+        # print(app.graph.xyzAxis)
+        # print(app.ms.xRotationMatrix)
+        drawGraph(app)
+        # print(app.function.f, "done")
+        # print(app.function.points, "done")
+        drawFunction(app)
+        drawUI(app)
+    elif app.insertMode:
+        drawUI(app)
+
+def drawUI(app):
+    if app.funcMode:
+        # draw all relevent labels
+        drawLabel(f'function: {app.function.string_function}',(app.width/2),950, size = 20)
+        drawLabel(f'X len:  {str(app.graph.xScope)}', 50, 10)
+        drawLabel(f'Y len:  {str(app.graph.yScope)}', 50, 30)
+        drawLabel(f'Z len:  {str(app.graph.zScope)}', 50, 50)
+    elif app.insertMode:
+        drawLabel(f'function: {app.function.string_function}', app.width/2, app.height/2, size=20)
 
 #time based step functions / event loop equivalent
 def onStep(app):
-    if app.rotating:
+    if app.funcMode:
         takeStep(app)
  
 #this is properly updating 
@@ -144,10 +160,10 @@ def takeStep(app):
         app.matrices.tx += 0.01
         app.matrices.ty += 0.01
         app.matrices.tz += 0.01
-        
-        app.matrices.updateXRotation()
-        app.matrices.updateYRotation()
-        app.matrices.updateZRotation()
+#     print(app.matrices.tx, app.matrices.ty, app.matrices.tz)    
+    app.matrices.updateXRotation()
+    app.matrices.updateYRotation()
+    app.matrices.updateZRotation()
 
 
 
@@ -155,16 +171,35 @@ def takeStep(app):
     #mf.projectPoint(app.matrices.)
 
 def onKeyPress(app, key):
-    if key == 'x': app.equation += 'x'
-    if key == 'y': app.equation += 'y'
-    if key == '+': app.equation += '+'
-    if key == '-': app.equation += '-'
-    if key == '*': app.equation += '*'
-    if key == '/': app.equation += '/'
-    if key.isdigit(): app.equation += key
-    if key == 'backspace': app.equation = app.equation[:-1]
-    if key == 'c': app.equation = ''
-    if key == 'enter': pass
+    if app.insertMode:
+        if key == 'x': app.function.string_function += 'x'
+        if key == 'y': app.function.string_function+= 'y'
+        if key == '+': app.function.string_function += '+'
+        if key == '-': app.function.string_function += '-'
+        if key == '*': app.function.string_function += '*'
+        if key == '/': app.function.string_function += '/'
+        if key.isdigit(): app.function.string_function += key
+        if key == 'backspace': app.function.string_function = app.function.string_function[:-1]
+        if key == 'c': app.function.string_function = ''
+    if app.funcMode:
+        if key == 'r': app.rotating = not app.rotating
+        if key == 'w': app.matrices.tz += 0.2
+        if key == 's': app.matrices.tz -= 0.2
+        if key == 'a': app.matrices.tx -= 0.2
+        if key == 'd': app.matrices.tx += 0.2
+        if key == 't': app.matrices.ty -= 0.2
+        if key == 'g': app.matrices.ty += 0.2
+        if key == 'u': 
+            app.matrices.tx= app.matrices.ty= app.matrices.tz = 0 
+    if key == 'i':
+        app.insertMode = True
+        app.funcMode = False
+    if key == 'f':
+        app.function.setSpFunction()
+        
+        app.function.generateFunctionPoints(app.graph.xRadius, app.graph.yRadius, app.graph.zRadius, app.graph.numGridLines)
+        app.funcMode = True
+        app.insertMode = False
 
 
 def main(app):
