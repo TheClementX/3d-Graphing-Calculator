@@ -23,13 +23,13 @@ class function:
         self.points = set() 
 
         # set the interval for point generation in x and y direction 
-        intervalSizeX = maxx/numgridlines
-        intervalSizeY = maxy/numgridlines
-        print(intervalSizeX, intervalSizeY)
+        intervalSizeX = maxx/(numgridlines//2)
+        intervalSizeY = maxy/(numgridlines//2)
+#         print(intervalSizeX, intervalSizeY)
 
         #must cast points in the range into ints could cause problems
-        for x in range(0, int(maxx) + 1, int(intervalSizeX)):
-            for y in range(0, int(maxy) + 1, int(intervalSizeY)):
+        for x in range(0, (int(maxx)) + 1, int(intervalSizeX)):
+            for y in range(0, (int(maxy)) + 1, int(intervalSizeY)):
                 
                 #x y
                 try:
@@ -60,7 +60,7 @@ class function:
                         self.points.add(nxny)
                 except:
                     pass
-        print(self.points) 
+#         print(self.points) 
         return self.points
 
     def printPoints(self):

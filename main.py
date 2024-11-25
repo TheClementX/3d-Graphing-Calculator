@@ -4,13 +4,22 @@ import numpy as np
 import MatrixFunctions as mf
 import Graph 
 import function 
+import math
 
 
 def onAppStart(app):
+    # graph app variables
+    app.numGridLines = '10'
+    app.xScope = '20'
+    app.yScope = '20' 
+    app.zScope = '20'
+    app.selectedScope = None
+    
+    #scale Mode
     app.stepsPerSecond = 60
     app.width = 1000
     app.height = 1000
-    app.graph = Graph.graph(40,20,20,10)
+    app.graph = Graph.graph(int(app.xScope), int(app.yScope), int(app.zScope), int(app.numGridLines))
     app.matrices = mf.matrices()
 
     #varibales used in scale point
@@ -32,6 +41,7 @@ def onAppStart(app):
     app.funcMode = False
     app.insertMode = True
     app.error = False
+    app.scaleMode = False
 
     #circles are drawing in the correct place spin scaling and lines next
 
@@ -127,32 +137,37 @@ def drawFunction(app):
         drawCircle(transformedPoint[0], transformedPoint[1], 4, fill='purple')
 
 def redrawAll(app):
-    if app.funcMode:
-        # print(app.graph.xyzAxis)
-        # print(app.graph.xyzAxis)
-        # print(app.ms.xRotationMatrix)
-        drawGraph(app)
-        # print(app.function.f, "done")
-        # print(app.function.points, "done")
-        drawFunction(app)
-        drawUI(app)
-    elif app.insertMode:
-        drawUI(app)
+
+    drawUI(app)
 
 def drawUI(app):
     if app.funcMode:
+        drawGraph(app)
+        drawFunction(app)
+
         # draw all relevent labels
         drawLabel(f'function: {app.function.string_function}',(app.width/2),950, size = 20)
         drawLabel(f'X len:  {str(app.graph.xScope)}', 50, 10)
         drawLabel(f'Y len:  {str(app.graph.yScope)}', 50, 30)
         drawLabel(f'Z len:  {str(app.graph.zScope)}', 50, 50)
     elif app.insertMode:
-        drawLabel(f'function: {app.function.string_function}', app.width/2, app.height/2, size=20)
-    if app.error:
+        drawLabel(f'function: {app.function.string_function}', app.width/2, app.height/2, size=60)
+        drawLabel('General Key Binds: ', app.width/4 - 60, 20, size = 30)
+        drawLabel('Insert Mode Key Binds: ', app.width * 2/4 - 10, 20, size = 30)
+        drawLabel('Scale Mode Key Binds: ', app.width * 3/4 + 60, 20, size = 30)
+
+    elif app.scaleMode:
+        drawLabel(f'X scale:  {str(app.graph.xScope)}', app.width/2, app.height/2 - 40, size=15)
+        drawLabel(f'Y scale:  {str(app.graph.yScope)}', app.width/2, app.height/2, size=15)
+        drawLabel(f'Z scale:  {str(app.graph.zScope)}', app.width/2, app.height/2 + 40, size=15)
+    elif app.error:
         drawLabel('invalid function entered', 800, 200)
+
 
 #time based step functions / event loop equivalent
 def onStep(app):
+#     print(app.selectedScope, app.xScope, app.yScope, app.zScope)
+#     print('graph', app.graph.xScope, app.graph.yScope, app.graph.zScope)
     if app.funcMode:
         takeStep(app)
  
@@ -174,6 +189,26 @@ def takeStep(app):
     #mf.projectPoint(app.matrices.)
 
 def onKeyPress(app, key):
+
+    if key == 'S':
+        app.scaleMode = True
+        app.insertMode = False
+        app.funcMode = False
+    if key == 'I':
+        app.insertMode = True
+        app.funcMode = False
+        app.scaleMode = False
+    if key == 'F':
+        try:
+            app.error = False
+            app.function.setSpFunction()
+            app.function.generateFunctionPoints(app.graph.xRadius, app.graph.yRadius, app.graph.zRadius, app.graph.numGridLines)
+            app.funcMode = True
+            app.insertMode = False
+            app.scaleMode = False
+        except:
+            app.error = True
+
     if app.insertMode:
         if key == ')' or key == '(': app.function.string_function += key
         if key == '+': app.function.string_function += '+'
@@ -186,27 +221,40 @@ def onKeyPress(app, key):
         if key == 'q': app.function.string_function = ''
     if app.funcMode:
         if key == 'r': app.rotating = not app.rotating
-        if key == 'w': app.matrices.tz += 0.2
-        if key == 's': app.matrices.tz -= 0.2
-        if key == 'a': app.matrices.tx -= 0.2
-        if key == 'd': app.matrices.tx += 0.2
-        if key == 't': app.matrices.ty -= 0.2
-        if key == 'g': app.matrices.ty += 0.2
+        if key == 't': app.matrices.tz += math.pi/12
+        if key == 'g': app.matrices.tz -= math.pi/12
+        if key == 'w': app.matrices.tx -= math.pi/12
+        if key == 's': app.matrices.tx += math.pi/12
+        if key == 'a': app.matrices.ty -= math.pi/12
+        if key == 'd': app.matrices.ty += math.pi/12
         if key == 'u': 
             app.matrices.tx= app.matrices.ty= app.matrices.tz = 0 
-    if key == 'I':
-        app.insertMode = True
-        app.funcMode = False
-    if key == 'F':
-        try:
-            app.error = False
-            app.function.setSpFunction()
-            app.function.generateFunctionPoints(app.graph.xRadius, app.graph.yRadius, app.graph.zRadius, app.graph.numGridLines)
-            app.funcMode = True
-            app.insertMode = False
-        except:
-            app.error = True
+    if app.scaleMode:
+        if key == 'x': app.selectedScope = 'x' 
+        if key == 'y': app.selectedScope = 'y' 
+        if key == 'z': app.selectedScope = 'z'
+        if key == 'n': app.selectedScope = 'n'
+        if key.isdigit():
+            if app.selectedScope == 'x':
+                app.xScope += key
+            elif app.selectedScope == 'y':
+                app.yScope += key
+            elif app.selectedScope == 'z':
+                app.zScope += key
+            elif app.selectedScope == 'n':
+                app.numGridLines += key
 
+        if key == 'backspace':
+            if app.selectedScope == 'x':
+                app.xScope = app.xScope[:-1]
+            elif app.selectedScope == 'y':
+                app.yScope = app.yScope[:-1]
+            elif app.selectedScope == 'z':
+                app.zScope = app.zScope[:-1]
+            elif app.selectedScope == 'n':
+                app.numGridLines = app.numGridLines[:-1]
+
+        if key == 'a': app.graph.scaleGraph(int(app.xScope), int(app.yScope), int(app.zScope), int(app.numGridLines) )
 
 def main(app):
     runApp()

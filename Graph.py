@@ -101,4 +101,5 @@ class graph:
         self.gridGapX = self.xScope / self.numGridLines
         self.setAxis()
         self.setOuterBox()
+        self.setGrid()
 
