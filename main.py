@@ -9,11 +9,14 @@ import math
 
 def onAppStart(app):
     # graph app variables
+    app.setMaxShapeCount(10_000)
     app.numGridLines = '10'
     app.xScope = '30'
     app.yScope = '20' 
     app.zScope = '20'
     app.selectedScope = None
+    app.drawGrid = True
+    app.drawBox = True
     
     #scale Mode
     app.stepsPerSecond = 60
@@ -67,36 +70,37 @@ def drawGraph(app):
         transformedPoint = makeDrawablePoint(app, point)       
         #rotation
         outerBoxPoints.append(transformedPoint)
-        drawCircle(transformedPoint[0], transformedPoint[1], 5, fill='red')
+#         drawCircle(transformedPoint[0], transformedPoint[1], 5, fill='red')
     
     #scale Axis
     for point in app.graph.xyzAxis:
         transformedPoint = makeDrawablePoint(app, point)        
         #regular Scaling
         axisPoints.append(transformedPoint)
-        drawCircle(transformedPoint[0], transformedPoint[1], 5, fill='red')
+#         drawCircle(transformedPoint[0], transformedPoint[1], 5, fill='red')
 
     #scale grid
     for point in app.graph.grid:
         #fix orientation of the grid
         transformedPoint = makeDrawablePoint(app, point)
         gridPoints.append(transformedPoint)
-        drawCircle(transformedPoint[0], transformedPoint[1], 5, fill='red')
+#         drawCircle(transformedPoint[0], transformedPoint[1], 5, fill='red')
 
 
     #connect points
     #draw box
-    front = outerBoxPoints[:4]
-    back = outerBoxPoints[4:]
-    for i in range(4):
-        if i == 3:
-            drawLine(front[i][0], front[i][1], front[0][0], front[0][1])
-            drawLine(back[i][0], back[i][1], back[0][0], back[0][1])
-        else:
-            drawLine(front[i][0], front[i][1], front[i+1][0], front[i+1][1])
-            drawLine(back[i][0], back[i][1], back[i+1][0], back[i+1][1])
+    if app.drawBox:
+        front = outerBoxPoints[:4]
+        back = outerBoxPoints[4:]
+        for i in range(4):
+            if i == 3:
+                drawLine(front[i][0], front[i][1], front[0][0], front[0][1])
+                drawLine(back[i][0], back[i][1], back[0][0], back[0][1])
+            else:
+                drawLine(front[i][0], front[i][1], front[i+1][0], front[i+1][1])
+                drawLine(back[i][0], back[i][1], back[i+1][0], back[i+1][1])
 
-        drawLine(front[i][0], front[i][1], back[i][0], back[i][1])
+            drawLine(front[i][0], front[i][1], back[i][0], back[i][1])
 
 
     #draw axis
@@ -107,7 +111,8 @@ def drawGraph(app):
         drawLine(center[0], center[1], point[0], point[1])
 
     #draw Grid
-    drawGrid(app)
+    if app.drawGrid:
+        drawGrid(app)
 
     #draw grid
 #does all the point transformation
@@ -150,8 +155,9 @@ def redrawAll(app):
 
 def drawUI(app):
     if app.funcMode:
-        drawGraph(app)
+        drawLabel('Function Mode', app.width/2, 50, size = 60, italic = True)
         drawFunction(app)
+        drawGraph(app)
 
         # draw all relevent labels
         drawLabel(f'function: {app.function.string_function}',(app.width/2),950, size = 20)
@@ -161,16 +167,17 @@ def drawUI(app):
         drawLabel(f'zoom: {app.scale}', 920, 10, size = 15)
         drawLabel(f'next zoom: {app.scaleString}', 920, 30, size = 15)
     elif app.insertMode:
+        drawLabel('Insert Mode', app.width/2, 50, size = 60, italic = True)
         drawLabel(f'f(x, y) = {app.function.string_function}', app.width/2 , app.height/2 - 50, size=60)
         #general keybinds
-        drawLabel('General Key Binds: ', app.width/3 , 20, size = 20)
-        drawLabel('w/s: rotate around y axis', app.width/3 , 40, size = 15)
-        drawLabel('a/d: rotate arounnd z axis', app.width/3 , 60, size = 15)
-        drawLabel('t/g: rotate around x axis', app.width/3 , 80, size = 15)
-        drawLabel('r: toggle rotating', app.width/3 , 100, size = 15)
-        drawLabel('u: reset graph position', app.width/3 , 120, size = 15)
-        drawLabel('+: zoom in', app.width/3 , 140, size = 15)
-        drawLabel('-: zoom out', app.width/3 , 160, size = 15)
+        drawLabel('General Key Binds: ', app.width/3 , 620, size = 20)
+        drawLabel('w/s: rotate around y axis', app.width/3 , 640, size = 15)
+        drawLabel('a/d: rotate arounnd z axis', app.width/3 , 660, size = 15)
+        drawLabel('t/g: rotate around x axis', app.width/3 , 680, size = 15)
+        drawLabel('r: toggle rotating', app.width/3 , 700, size = 15)
+        drawLabel('u: reset graph position', app.width/3 , 720, size = 15)
+        drawLabel('+: zoom in', app.width/3 , 740, size = 15)
+        drawLabel('-: zoom out', app.width/3 , 760, size = 15)
 
         #insert keybinds
         drawLabel('Insert Mode Instructions: ', app.width * 2/4, app.height/2 + 20, size = 20)
@@ -178,17 +185,22 @@ def drawUI(app):
         drawLabel('use () to surround variables', app.width * 2/4 , app.height/2 + 60, size = 20)
         
         #scale mode keybinds
-        drawLabel('Scale Mode Instructions: ', app.width * 2/3, 20, size = 20)
-        drawLabel('press x,y,z,n to select scope', app.width* 2/3, 40, size = 15)
-        drawLabel('enter desired scope value', app.width * 2/3, 60, size = 15)
-        drawLabel('press \'a\' to apply changes', app.width*2/3, 80, size = 15)
+        drawLabel('Scale Mode Instructions: ', app.width * 2/3, 620, size = 20)
+        drawLabel('press x,y,z,n to select scope', app.width* 2/3, 640, size = 15)
+        drawLabel('enter desired scope value', app.width * 2/3, 660, size = 15)
+        drawLabel('press \'a\' to apply changes', app.width*2/3, 680, size = 15)
+        drawLabel('press \'g\' to toggle grid lines', app.width*2/3, 700, size = 15)
+        drawLabel('press \'b\' to toggle outer box', app.width*2/3, 720, size = 15)
 
     elif app.scaleMode:
+        drawLabel('Scale Mode', app.width/2, 50, size = 60, italic = True)
         drawLabel(f'X scale:  {str(app.xScope)}', app.width/2, app.height/2 - 40, size=30)
         drawLabel(f'Y scale:  {str(app.yScope)}', app.width/2, app.height/2, size=30)
         drawLabel(f'Z scale:  {str(app.zScope)}', app.width/2, app.height/2 + 40, size=30)
         drawLabel(f'Num GridLines:  {str(app.numGridLines)}', app.width/2, app.height/2 + 80, size=30)
 
+        drawLabel(f'Grid Lines On: {app.drawGrid}', app.width/2, app.height/2-80, size = 30)
+        drawLabel(f'Box On: {app.drawBox}', app.width/2, app.height/2-120, size = 30)
     elif app.error:
         drawLabel('invalid function entered', 800, 200)
 
@@ -270,6 +282,8 @@ def onKeyPress(app, key):
         if key == 'y': app.selectedScope = 'y' 
         if key == 'z': app.selectedScope = 'z'
         if key == 'n': app.selectedScope = 'n'
+        if key == 'g': app.drawGrid = not app.drawGrid
+        if key == 'b': app.drawBox = not app.drawBox
         if key.isdigit():
             if app.selectedScope == 'x':
                 app.xScope += key

@@ -27,9 +27,11 @@ class function:
         intervalSizeY = maxy/(numgridlines//2)
 #         print(intervalSizeX, intervalSizeY)
 
+        xPoints = [x*intervalSizeX for x in range(numgridlines//2 +1)]
+        yPoints = [y*intervalSizeY for y in range(numgridlines//2 + 1)]
         #must cast points in the range into ints could cause problems
-        for x in range(0, (int(maxx)) + 1, int(intervalSizeX)):
-            for y in range(0, (int(maxy)) + 1, int(intervalSizeY)):
+        for x in xPoints:
+            for y in yPoints: 
                 
                 #x y
                 try:
