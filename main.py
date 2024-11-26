@@ -10,7 +10,7 @@ import math
 def onAppStart(app):
     # graph app variables
     app.numGridLines = '10'
-    app.xScope = '20'
+    app.xScope = '30'
     app.yScope = '20' 
     app.zScope = '20'
     app.selectedScope = None
@@ -24,7 +24,10 @@ def onAppStart(app):
 
     #varibales used in scale point
     #20x20 box is something to consider
-    app.scale = 20
+    app.scaleString = '20'
+    app.scale = None
+    setScaleFactor(app)
+
     app.xoffset = app.width/2
     app.yoffset = app.height/2
 
@@ -47,6 +50,11 @@ def onAppStart(app):
 
     #apply necessary transformations to each element of the graph not including the function
     #function will be drawn in a seperate function for clarity
+
+#handle the zoom of the drawing
+def setScaleFactor(app):
+    app.scale = int(app.scaleString)
+   
 def drawGraph(app):
 
     outerBoxPoints = []
@@ -150,16 +158,37 @@ def drawUI(app):
         drawLabel(f'X len:  {str(app.graph.xScope)}', 50, 10)
         drawLabel(f'Y len:  {str(app.graph.yScope)}', 50, 30)
         drawLabel(f'Z len:  {str(app.graph.zScope)}', 50, 50)
+        drawLabel(f'zoom: {app.scale}', 920, 10, size = 15)
+        drawLabel(f'next zoom: {app.scaleString}', 920, 30, size = 15)
     elif app.insertMode:
-        drawLabel(f'function: {app.function.string_function}', app.width/2, app.height/2, size=60)
-        drawLabel('General Key Binds: ', app.width/4 - 60, 20, size = 30)
-        drawLabel('Insert Mode Key Binds: ', app.width * 2/4 - 10, 20, size = 30)
-        drawLabel('Scale Mode Key Binds: ', app.width * 3/4 + 60, 20, size = 30)
+        drawLabel(f'f(x, y) = {app.function.string_function}', app.width/2 , app.height/2 - 50, size=60)
+        #general keybinds
+        drawLabel('General Key Binds: ', app.width/3 , 20, size = 20)
+        drawLabel('w/s: rotate around y axis', app.width/3 , 40, size = 15)
+        drawLabel('a/d: rotate arounnd z axis', app.width/3 , 60, size = 15)
+        drawLabel('t/g: rotate around x axis', app.width/3 , 80, size = 15)
+        drawLabel('r: toggle rotating', app.width/3 , 100, size = 15)
+        drawLabel('u: reset graph position', app.width/3 , 120, size = 15)
+        drawLabel('+: zoom in', app.width/3 , 140, size = 15)
+        drawLabel('-: zoom out', app.width/3 , 160, size = 15)
+
+        #insert keybinds
+        drawLabel('Insert Mode Instructions: ', app.width * 2/4, app.height/2 + 20, size = 20)
+        drawLabel('enter any function in terms of x and y', app.width * 2/4 , app.height/2 + 40, size = 20)
+        drawLabel('use () to surround variables', app.width * 2/4 , app.height/2 + 60, size = 20)
+        
+        #scale mode keybinds
+        drawLabel('Scale Mode Instructions: ', app.width * 2/3, 20, size = 20)
+        drawLabel('press x,y,z,n to select scope', app.width* 2/3, 40, size = 15)
+        drawLabel('enter desired scope value', app.width * 2/3, 60, size = 15)
+        drawLabel('press \'a\' to apply changes', app.width*2/3, 80, size = 15)
 
     elif app.scaleMode:
-        drawLabel(f'X scale:  {str(app.graph.xScope)}', app.width/2, app.height/2 - 40, size=15)
-        drawLabel(f'Y scale:  {str(app.graph.yScope)}', app.width/2, app.height/2, size=15)
-        drawLabel(f'Z scale:  {str(app.graph.zScope)}', app.width/2, app.height/2 + 40, size=15)
+        drawLabel(f'X scale:  {str(app.xScope)}', app.width/2, app.height/2 - 40, size=30)
+        drawLabel(f'Y scale:  {str(app.yScope)}', app.width/2, app.height/2, size=30)
+        drawLabel(f'Z scale:  {str(app.zScope)}', app.width/2, app.height/2 + 40, size=30)
+        drawLabel(f'Num GridLines:  {str(app.numGridLines)}', app.width/2, app.height/2 + 80, size=30)
+
     elif app.error:
         drawLabel('invalid function entered', 800, 200)
 
@@ -218,7 +247,7 @@ def onKeyPress(app, key):
         if key.isdigit(): app.function.string_function += key
         if key.isalpha() and len(key) == 1 and key != 'I' and key != 'F': app.function.string_function += key 
         if key == 'backspace': app.function.string_function = app.function.string_function[:-1]
-        if key == 'q': app.function.string_function = ''
+        if key == '?': app.function.string_function = ''
     if app.funcMode:
         if key == 'r': app.rotating = not app.rotating
         if key == 't': app.matrices.tz += math.pi/12
@@ -229,6 +258,13 @@ def onKeyPress(app, key):
         if key == 'd': app.matrices.ty += math.pi/12
         if key == 'u': 
             app.matrices.tx= app.matrices.ty= app.matrices.tz = 0 
+        if key.isdigit(): app.scaleString += key
+        if key == 'backspace': app.scaleString = app.scaleString[:-1]
+        if key == 'enter': setScaleFactor(app)
+        if key == '+' and app.scale < 50: app.scale += 2
+        if key == '-' and app.scale > 2: app.scale -= 2
+
+
     if app.scaleMode:
         if key == 'x': app.selectedScope = 'x' 
         if key == 'y': app.selectedScope = 'y' 

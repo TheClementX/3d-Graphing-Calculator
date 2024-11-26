@@ -95,6 +95,9 @@ class graph:
         self.xScope = xScope
         self.yScope = yScope
         self.zScope = zScope
+        self.xRadius = xScope/2
+        self.yRadius = yScope/2
+        self.zRadius = zScope/2
         self.numGridLines = numGridLines
 
         self.gridGapY = self.yScope / self.numGridLines
