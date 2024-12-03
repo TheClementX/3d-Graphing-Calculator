@@ -313,6 +313,7 @@ def onMousePress(app, mouseX, mouseY):
         app.matrices.ty = 0 
         app.matrices.tz = 0 
         app.matrices.tx = 0
+    if app.rotateButton.getPressed(mouseX, mouseY): app.rotating = not app.rotating
 
 def onKeyPress(app, key):
 
