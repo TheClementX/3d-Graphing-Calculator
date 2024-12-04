@@ -1,43 +1,34 @@
-#note about orientation
-#graphics 3d is going to have -z axis pointing out
-#you will need to adust for this when plotting points
-#maybe allow for the user to select an orientation with rotation matrices
-
-#main goals for graph:
-#graph needs to be scalable with a rescale function
-#graph needs to end in correct orientation considering the incorrect orientation of screen 3d graphics
-
-#none of the points in this class should be modified in main 
+#class used to store all graph variables
+#this class defines functions to manipulate graph dimensions
 class graph:
 
     def __init__(self, xScope, yScope, zScope, numGridLines):
+        #variables to define full range of axises
         self.xScope = xScope
         self.yScope = yScope
         self.zScope = zScope
 
-        #the number of lines in each direction on the grid
+        #variables to set number of grid lines to either side of the origin 
+        #set the interval size (grid gap) for generating function points with function class
         self.numGridLines = numGridLines
         self.gridGapY = self.yScope / self.numGridLines
         self.gridGapX = self.xScope / self.numGridLines
 
+        #set max distance from origin in any perpendicular direction
         self.xRadius = xScope/2
         self.yRadius = yScope/2
         self.zRadius = zScope/2
 
-        #faces defined clockwise from bottom left
+        #instantiate outer box points
         self.setOuterBox()
 
-        #start at positive x go counter clockwise then up down
-        #first point is center of the axis
+        #instantiate axis points
         self.setAxis()
 
-        #set the grid
+        #instantiate grid points
         self.setGrid()
 
-        #an array to hold the points to be graphed of the function
-        self.fPoints = []
-
-
+    #define function to update and instantiate axis points for drawing
     def setAxis(self):
         self.xyzAxis = [
             [0,0,0],
@@ -49,6 +40,7 @@ class graph:
             [0, self.yRadius * -1.0, 0]
         ]
 
+    #define function to update and instantiate box points for drawing
     def setOuterBox(self):
         self.outerBox = [
             #front face 
@@ -64,9 +56,7 @@ class graph:
 
         ]
 
-    #sets the xy grid
-    #this includes the correct code to set each front vertex of the grid
-    #need to set points from 0,0,0 so that they are consistent gap from the origin
+    #define function to set the points necessary to draw the xy grid
     def setGrid(self):
         self.grid =[
             [-self.xRadius, -self.yRadius, 0],
@@ -87,10 +77,7 @@ class graph:
             self.gridFrontY.append([self.xRadius, y, 0])
             self.gridFrontY.append([self.xRadius, -y, 0])
 
-#         print(self.gridFrontX)
-#         print(self.gridFrontY)
-
-
+    #define function to scale the graph
     def scaleGraph(self, xScope, yScope, zScope, numGridLines):
         self.xScope = xScope
         self.yScope = yScope

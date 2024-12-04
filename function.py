@@ -1,23 +1,21 @@
+#knowledge of how to use sympy was learned from sympy documentation
+#url of sympy documentation: https://docs.sympy.org/latest/index.html
 import sympy as sp
-import numpy as np 
 import math 
 
-#takes a string function
-#sets a sympy function
-#lambdifies function then evaluates it based on an x y range
-#only not for parse_expr to work is to use proper sp syntax not including sp.buildin functions
-
+#define a class to hold a string function and then turn it into a lambda expression
+#this class uses said lambda expression to generate the points for a function to be drawn in function mode
 class function:
     def __init__(self):
         self.string_function = ''
         self.f = None
 
-    #sets the function
+    #sets the function in sympy
     def setSpFunction(self):
         self.f = sp.parse_expr(self.string_function)
     
-    #get all [x, y, z] vector values based on maxx and maxy and interval size
-    #this raises domain errors with sqrt functions
+    #define a function to get all [x, y, z] vector values based on maxx and maxy and interval size
+    #account for possible domain errors with try except 
     def generateFunctionPoints(self, maxx, maxy, maxz, numgridlines):
         lambdaF = sp.lambdify(sp.symbols('x, y'), self.f, 'math')
         self.points = set() 
@@ -25,11 +23,12 @@ class function:
         # set the interval for point generation in x and y direction 
         intervalSizeX = maxx/(numgridlines//2)
         intervalSizeY = maxy/(numgridlines//2)
-#         print(intervalSizeX, intervalSizeY)
 
+        #create list of all points to be iterated over
         xPoints = [x*intervalSizeX for x in range(numgridlines//2 +1)]
         yPoints = [y*intervalSizeY for y in range(numgridlines//2 + 1)]
-        #must cast points in the range into ints could cause problems
+
+        #generate function points
         for x in xPoints:
             for y in yPoints: 
                 
@@ -62,9 +61,9 @@ class function:
                         self.points.add(nxny)
                 except:
                     pass
-#         print(self.points) 
         return self.points
 
+    #helper function used in development to varify value of generated points 
     def printPoints(self):
         for i in range(len(self.points)):
             if i%5 == 0:
